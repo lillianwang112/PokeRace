@@ -20,4 +20,4 @@ Working game with: lecture upload, typing engine, WPM/accuracy, bot racers,
 XP/leveling, 16 achievements, Nitro boost, dark/light theme.
 
 ## Full Build Plan
-See docs/BUILD_PLAN.md for phase-by-phase implementation spec.
+See BUILD_PLAN.md for phase-by-phase implementation spec.
