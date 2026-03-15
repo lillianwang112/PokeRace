@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PokemonType — Typing Race Adventure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PokemonType: A Pokemon-themed typing race game. Study any subject while racing Pokemon!" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['JetBrains Mono','monospace'], display:['Orbitron','sans-serif'] },
+          colors: {
+            pokered: { 50:'#fef2f2', 100:'#fee2e2', 200:'#fecaca', 300:'#fca5a5', 400:'#f87171', 500:'#ef4444', 600:'#dc2626', 700:'#b91c1c', 800:'#991b1b', 900:'#7f1d1d' },
+            pokeblue: { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 300:'#93c5fd', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e3a5f', 900:'#1a1a2e' },
+            pokeyellow: { 400:'#facc15', 500:'#eab308', 600:'#ca8a04' },
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#1a1a2e;color:#e2e8f0;font-family:'Inter',sans-serif;overflow-x:hidden}
+    body.light-mode{background:linear-gradient(135deg,#fef9c3 0%,#fef3c7 30%,#dbeafe 70%,#eff6ff 100%);color:#1e293b}
+    body.light-mode .glass{background:rgba(255,255,255,0.75)!important;border-color:rgba(0,0,0,0.08)!important}
+    body.light-mode .glass-dark{background:rgba(255,255,255,0.5)!important}
+    body.light-mode .text-slate-100,body.light-mode .text-slate-200,body.light-mode .text-slate-300{color:#1e293b!important}
+    body.light-mode .text-slate-400,body.light-mode .text-slate-500{color:#475569!important}
+    body.light-mode input,body.light-mode textarea,body.light-mode select{background:#fff!important;color:#1e293b!important;border-color:#d1d5db!important}
+    body.light-mode .race-track-bg{background:linear-gradient(90deg,#86efac,#67e8f9,#c4b5fd)!important}
+    .glass{background:rgba(30,30,60,0.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08)}
+    .glass-dark{background:rgba(20,20,45,0.6)}
+    .gradient-text{background:linear-gradient(135deg,#f87171 0%,#facc15 50%,#60a5fa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .pokeball-gradient{background:linear-gradient(180deg,#ef4444 0%,#ef4444 45%,#1e293b 45%,#1e293b 55%,#f8fafc 55%,#f8fafc 100%)}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(148,163,184,0.3);border-radius:3px}
+
+    @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+    @keyframes slideUp{0%{opacity:0;transform:translateY(30px)}100%{opacity:1;transform:translateY(0)}}
+    @keyframes slideDown{0%{opacity:0;transform:translateY(-20px)}100%{opacity:1;transform:translateY(0)}}
+    @keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+    @keyframes countPop{0%{transform:scale(0.3);opacity:0}50%{transform:scale(1.4)}100%{transform:scale(1);opacity:1}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    @keyframes dash{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+    @keyframes nitroFlash{0%{filter:brightness(1)}50%{filter:brightness(1.8) saturate(1.5)}100%{filter:brightness(1)}}
+    @keyframes speedLines{0%{transform:translateX(0);opacity:0.6}100%{transform:translateX(-200px);opacity:0}}
+    @keyframes sparkle{0%,100%{opacity:0;transform:scale(0)}50%{opacity:1;transform:scale(1)}}
+    @keyframes confettiFall{0%{transform:translateY(-100px) rotate(0deg);opacity:1}100%{transform:translateY(700px) rotate(720deg);opacity:0}}
+    @keyframes raceFinish{0%{transform:scale(0.5) rotate(-10deg);opacity:0}60%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+    @keyframes progressPulse{0%,100%{box-shadow:0 0 5px rgba(250,204,21,0.3)}50%{box-shadow:0 0 20px rgba(250,204,21,0.8)}}
+    @keyframes electricArc{0%{opacity:0;d:path('M0,10 Q5,0 10,10')}25%{opacity:1;d:path('M0,10 Q5,20 10,10')}50%{opacity:1;d:path('M0,10 Q5,0 10,10')}75%{opacity:0.5}100%{opacity:0}}
+    @keyframes runAnimation{0%{transform:translateY(0px)}25%{transform:translateY(-3px)}50%{transform:translateY(0px)}75%{transform:translateY(-2px)}100%{transform:translateY(0px)}}
+
+    .animate-fade{animation:fadeIn 0.5s ease-out}
+    .animate-slide-up{animation:slideUp 0.5s ease-out}
+    .animate-pop{animation:popIn 0.4s ease-out}
+    .animate-count{animation:countPop 0.7s ease-out}
+    .animate-bounce-slow{animation:bounce 2s ease-in-out infinite}
+    .animate-shake{animation:shake 0.4s ease-in-out}
+    .animate-nitro{animation:nitroFlash 0.3s ease-out}
+    .animate-finish{animation:raceFinish 0.6s ease-out}
+    .animate-sparkle{animation:sparkle 0.6s ease-out}
+
+    .confetti-piece{position:fixed;z-index:9999;pointer-events:none}
+    .toast-enter{animation:slideDown 0.4s ease-out}
+    .race-track-bg{background:linear-gradient(90deg,#2d1b69,#1a1a2e,#0f2027)}
+    .track-lane{border-bottom:1px solid rgba(255,255,255,0.06);position:relative;overflow:hidden}
+    .track-lane::before{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)}
+    .pokemon-racer{transition:left 0.12s linear;position:absolute;top:50%;transform:translateY(-50%)}
+    .pokemon-racer.running{animation:runAnimation 0.2s ease-in-out infinite}
+    .speed-line{position:absolute;height:2px;border-radius:1px;animation:speedLines 0.4s linear forwards;pointer-events:none}
+    .xp-bar{transition:width 0.6s ease-out}
+    .combo-badge{animation:popIn 0.3s ease-out}
+    .nitro-active{filter:brightness(1.3) saturate(1.3);text-shadow:0 0 10px rgba(250,204,21,0.5)}
+    .passage-cursor{border-left:2px solid #facc15;animation:progressPulse 1s ease-in-out infinite}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
+
+    /* ═══════════════════ CONSTANTS ═══════════════════ */
+    const STORE_KEYS = { lectures:"pt_lectures", races:"pt_races", settings:"pt_settings", achievements:"pt_achievements", player:"pt_player" };
+    const load = (k,fb) => { try { const r=localStorage.getItem(k); return r?JSON.parse(r):fb; } catch{return fb;} };
+    const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+    const POKEMON = [
+      { id:"pikachu", name:"Pikachu", emoji:"⚡", type:"Electric", color:"#facc15", bg:"bg-yellow-400", unlock:0, speed:1.0, desc:"The classic starter! Balanced speed." },
+      { id:"charmander", name:"Charmander", emoji:"🔥", type:"Fire", color:"#f97316", bg:"bg-orange-400", unlock:0, speed:1.0, desc:"A fiery spirit with great accuracy." },
+      { id:"squirtle", name:"Squirtle", emoji:"💧", type:"Water", color:"#3b82f6", bg:"bg-blue-400", unlock:0, speed:1.0, desc:"Cool and steady under pressure." },
+      { id:"bulbasaur", name:"Bulbasaur", emoji:"🌿", type:"Grass", color:"#22c55e", bg:"bg-green-400", unlock:0, speed:1.0, desc:"Grows stronger over time." },
+      { id:"eevee", name:"Eevee", emoji:"🦊", type:"Normal", color:"#d4a574", bg:"bg-amber-300", unlock:3, speed:1.05, desc:"Adaptable and quick! +5% speed." },
+      { id:"jigglypuff", name:"Jigglypuff", emoji:"🎤", type:"Fairy", color:"#f9a8d4", bg:"bg-pink-300", unlock:5, speed:1.0, desc:"Charm your way to victory!" },
+      { id:"gengar", name:"Gengar", emoji:"👻", type:"Ghost", color:"#8b5cf6", bg:"bg-purple-400", unlock:8, speed:1.1, desc:"Shadow speed! +10% speed bonus." },
+      { id:"mewtwo", name:"Mewtwo", emoji:"🔮", type:"Psychic", color:"#a78bfa", bg:"bg-violet-400", unlock:12, speed:1.15, desc:"Psychic power! +15% speed bonus." },
+      { id:"rayquaza", name:"Rayquaza", emoji:"🐉", type:"Dragon", color:"#10b981", bg:"bg-emerald-400", unlock:18, speed:1.2, desc:"Legendary speed! +20% bonus." },
+      { id:"arceus", name:"Arceus", emoji:"✨", type:"Cosmic", color:"#fbbf24", bg:"bg-amber-400", unlock:25, speed:1.25, desc:"The ultimate racer! +25% speed." },
+    ];
+
+    const BOT_POKEMON = [
+      { name:"Rattata", emoji:"🐭", color:"bg-purple-400", mult:0.75 },
+      { name:"Pidgey", emoji:"🐦", color:"bg-amber-400", mult:0.9 },
+      { name:"Abra", emoji:"🧿", color:"bg-yellow-400", mult:1.05 },
+      { name:"Haunter", emoji:"👾", color:"bg-indigo-400", mult:1.15 },
+    ];
+
+    const ACHIEVEMENTS = [
+      { id:"first_catch", name:"First Catch!", desc:"Complete your first race", icon:"🎉", check:s=>s.totalRaces>=1 },
+      { id:"wpm50", name:"Quick Attack", desc:"Reach 50+ WPM", icon:"⚡", check:s=>s.bestWpm>=50 },
+      { id:"wpm70", name:"Thunderbolt", desc:"Reach 70+ WPM", icon:"🌩️", check:s=>s.bestWpm>=70 },
+      { id:"wpm90", name:"Thunder", desc:"Reach 90+ WPM", icon:"⛈️", check:s=>s.bestWpm>=90 },
+      { id:"wpm100", name:"Hyper Beam", desc:"Reach 100+ WPM", icon:"💥", check:s=>s.bestWpm>=100 },
+      { id:"perfect", name:"Perfect Form", desc:"100% accuracy in a race", icon:"🎯", check:s=>s.perfectRaces>=1 },
+      { id:"races10", name:"Trainer", desc:"Complete 10 races", icon:"🏃", check:s=>s.totalRaces>=10 },
+      { id:"races25", name:"Ace Trainer", desc:"Complete 25 races", icon:"🎖️", check:s=>s.totalRaces>=25 },
+      { id:"races50", name:"Pokemon Master", desc:"Complete 50 races", icon:"👑", check:s=>s.totalRaces>=50 },
+      { id:"streak3", name:"On Fire", desc:"3-day practice streak", icon:"🔥", check:s=>s.streak>=3 },
+      { id:"streak7", name:"Unstoppable", desc:"7-day streak", icon:"💪", check:s=>s.streak>=7 },
+      { id:"combo30", name:"Combo Master", desc:"30+ char combo", icon:"🌟", check:s=>s.bestCombo>=30 },
+      { id:"combo50", name:"Ultra Combo", desc:"50+ char combo", icon:"💎", check:s=>s.bestCombo>=50 },
+      { id:"nitro5", name:"Nitro User", desc:"Use Nitro Boost 5 times", icon:"🚀", check:s=>s.nitroUses>=5 },
+      { id:"lvl5", name:"Rising Star", desc:"Reach Level 5", icon:"⭐", check:s=>s.level>=5 },
+      { id:"lvl10", name:"Elite Four", desc:"Reach Level 10", icon:"🏆", check:s=>s.level>=10 },
+    ];
+
+    const DIFFICULTY = {
+      easy:{ label:"Easy", maxLen:120, botMult:0.7, xpMult:0.8, color:"green" },
+      medium:{ label:"Medium", maxLen:350, botMult:1.0, xpMult:1.0, color:"yellow" },
+      hard:{ label:"Hard", maxLen:Infinity, botMult:1.3, xpMult:1.5, color:"red" },
+    };
+
+    const DEFAULT_SETTINGS = { theme:"dark", difficulty:"medium", soundOn:true, selectedPokemon:"pikachu" };
+    const DEFAULT_PLAYER = { xp:0, level:1, totalRaces:0, bestWpm:0, bestCombo:0, nitroUses:0, nitroCharge:0 };
+
+    function xpForLevel(lvl) { return Math.floor(100 * Math.pow(1.4, lvl - 1)); }
+    function getLevel(totalXp) {
+      let lvl = 1, xpNeeded = 0;
+      while (true) { const req = xpForLevel(lvl); if (totalXp < xpNeeded + req) return { level:lvl, currentXp:totalXp - xpNeeded, needed:req }; xpNeeded += req; lvl++; }
+    }
+
+    function calcAvgWPM(races, n=10) { if(!races.length)return 40; const r=races.slice(-n); return r.reduce((a,x)=>a+(x.wpm||0),0)/r.length||40; }
+    function normalizeChar(c) { if(c==="\u00A0")return" ";if(c==="\u2013"||c==="\u2014")return"-";if(c==="\u2018"||c==="\u2019")return"'";if(c==="\u201C"||c==="\u201D")return'"';return c; }
+    function truncPassage(t,m) { if(t.length<=m)return t; const c=t.substring(0,m),s=c.lastIndexOf(" "); return s>m*0.7?c.substring(0,s):c; }
+
+    function getStreak(races) {
+      if(!races.length)return 0;
+      const days=new Set(races.map(r=>new Date(r.timestamp).toDateString()));
+      let streak=0, d=new Date();
+      while(true){
+        if(days.has(d.toDateString())){streak++;d.setDate(d.getDate()-1);}
+        else if(streak===0){d.setDate(d.getDate()-1);if(!days.has(d.toDateString()))break;}
+        else break;
+      }
+      return streak;
+    }
+    function getStats(races,player) {
+      return { totalRaces:races.length, bestWpm:races.reduce((m,r)=>Math.max(m,r.wpm||0),0), perfectRaces:races.filter(r=>r.accuracy>=99.5).length,
+        streak:getStreak(races), bestCombo:races.reduce((m,r)=>Math.max(m,r.bestCombo||0),0), nitroUses:player.nitroUses||0, level:getLevel(player.xp).level };
+    }
+
+    /* ═══════════════════ AUDIO ═══════════════════ */
+    const AC = typeof AudioContext!=="undefined"?AudioContext:(typeof webkitAudioContext!=="undefined"?webkitAudioContext:null);
+    let actx=null;
+    function getAC(){if(!actx&&AC)actx=new AC();return actx;}
+    function sfx(type){
+      const c=getAC();if(!c)return;
+      try{
+        const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+        if(type==="key"){o.frequency.value=600+Math.random()*400;g.gain.value=0.025;o.type="sine";o.start();o.stop(c.currentTime+0.025);}
+        else if(type==="err"){o.frequency.value=180;g.gain.value=0.06;o.type="square";o.start();o.stop(c.currentTime+0.07);}
+        else if(type==="tick"){o.frequency.value=520;g.gain.value=0.08;o.type="sine";o.start();o.stop(c.currentTime+0.12);}
+        else if(type==="go"){o.frequency.value=880;g.gain.value=0.12;o.type="triangle";o.start();o.stop(c.currentTime+0.3);}
+        else if(type==="nitro"){[800,1000,1200,1400].forEach((f,i)=>{const x=c.createOscillator(),gg=c.createGain();x.connect(gg);gg.connect(c.destination);x.frequency.value=f;gg.gain.value=0.06;x.type="sawtooth";x.start(c.currentTime+i*0.04);x.stop(c.currentTime+i*0.04+0.08);});}
+        else if(type==="win"){[523,659,784,1047,1319].forEach((f,i)=>{const x=c.createOscillator(),gg=c.createGain();x.connect(gg);gg.connect(c.destination);x.frequency.value=f;gg.gain.value=0.07;x.type="sine";x.start(c.currentTime+i*0.1);x.stop(c.currentTime+i*0.1+0.2);});}
+        else if(type==="lvlup"){[440,554,659,880,1047,1319].forEach((f,i)=>{const x=c.createOscillator(),gg=c.createGain();x.connect(gg);gg.connect(c.destination);x.frequency.value=f;gg.gain.value=0.06;x.type="triangle";x.start(c.currentTime+i*0.08);x.stop(c.currentTime+i*0.08+0.15);});}
+        else if(type==="ach"){[660,880,1100,1320,1540].forEach((f,i)=>{const x=c.createOscillator(),gg=c.createGain();x.connect(gg);gg.connect(c.destination);x.frequency.value=f;gg.gain.value=0.05;x.type="triangle";x.start(c.currentTime+i*0.06);x.stop(c.currentTime+i*0.06+0.12);});}
+        else if(type==="combo"){o.frequency.value=700+Math.random()*200;g.gain.value=0.03;o.type="triangle";o.start();o.stop(c.currentTime+0.04);}
+      }catch(e){}
+    }
+
+    function launchConfetti(){
+      const colors=["#ef4444","#facc15","#3b82f6","#22c55e","#8b5cf6","#ec4899","#f97316"];
+      for(let i=0;i<80;i++){
+        const el=document.createElement("div");el.className="confetti-piece";
+        el.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation:confettiFall ${1+Math.random()*2}s ease-out ${Math.random()*0.5}s forwards;`;
+        document.body.appendChild(el);setTimeout(()=>el.remove(),4000);
+      }
+    }
+
+    /* ═══════════════════ CONTEXT ═══════════════════ */
+    const Ctx = createContext();
+
+    /* ═══════════════════ APP ═══════════════════ */
+    function App(){
+      const [settings,setSettings]=useState(()=>load(STORE_KEYS.settings,DEFAULT_SETTINGS));
+      const [lectures,setLectures]=useState(()=>load(STORE_KEYS.lectures,[]));
+      const [races,setRaces]=useState(()=>load(STORE_KEYS.races,[]));
+      const [achievements,setAchievements]=useState(()=>load(STORE_KEYS.achievements,[]));
+      const [player,setPlayer]=useState(()=>load(STORE_KEYS.player,DEFAULT_PLAYER));
+      const [view,setView]=useState("menu");
+      const [raceConfig,setRaceConfig]=useState(null);
+      const [lastResult,setLastResult]=useState(null);
+      const [toasts,setToasts]=useState([]);
+
+      useEffect(()=>{save(STORE_KEYS.settings,settings)},[settings]);
+      useEffect(()=>{save(STORE_KEYS.lectures,lectures)},[lectures]);
+      useEffect(()=>{save(STORE_KEYS.races,races)},[races]);
+      useEffect(()=>{save(STORE_KEYS.achievements,achievements)},[achievements]);
+      useEffect(()=>{save(STORE_KEYS.player,player)},[player]);
+      useEffect(()=>{if(settings.theme==="dark")document.body.classList.remove("light-mode");else document.body.classList.add("light-mode");},[settings.theme]);
+
+      const toast=useCallback((msg,icon)=>{const id=Date.now()+Math.random();setToasts(p=>[...p,{id,msg,icon}]);setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),4000);},[]);
+      const setSetting=(k,v)=>setSettings(p=>({...p,[k]:v}));
+
+      const checkAch=useCallback((newRaces,extra={})=>{
+        const stats=getStats(newRaces,{...player,...extra});
+        ACHIEVEMENTS.forEach(a=>{
+          if(!achievements.includes(a.id)&&a.check(stats)){
+            setAchievements(p=>{const n=[...p,a.id];save(STORE_KEYS.achievements,n);return n;});
+            toast(`${a.name} unlocked!`,a.icon);
+            if(settings.soundOn)sfx("ach");
+          }
+        });
+      },[achievements,player,settings.soundOn,toast]);
+
+      const handleStart=(config)=>{setRaceConfig(config);setView("race");};
+
+      const handleFinish=(result)=>{
+        const diff=DIFFICULTY[settings.difficulty];
+        const baseXP=Math.floor(result.wpm * (result.accuracy/100) * diff.xpMult);
+        const bonusXP=result.bestCombo>=20?Math.floor(baseXP*0.2):0;
+        const totalXP=baseXP+bonusXP;
+        const oldLevel=getLevel(player.xp).level;
+
+        const newRace={id:Date.now(),timestamp:Date.now(),wpm:result.wpm,accuracy:result.accuracy,
+          mode:raceConfig.mode,difficulty:settings.difficulty,bestCombo:result.bestCombo||0,timeSec:result.timeSec,
+          pokemon:settings.selectedPokemon,xpEarned:totalXP};
+        const updRaces=[...races,newRace];
+        setRaces(updRaces);
+
+        const updPlayer={...player,xp:player.xp+totalXP,totalRaces:player.totalRaces+1,
+          bestWpm:Math.max(player.bestWpm,result.wpm),bestCombo:Math.max(player.bestCombo,result.bestCombo||0)};
+        setPlayer(updPlayer);
+
+        const newLevel=getLevel(updPlayer.xp).level;
+        if(newLevel>oldLevel){toast(`Level Up! You're now level ${newLevel}!`,"🎉");if(settings.soundOn)sfx("lvlup");}
+
+        // Check unlocks
+        const newUnlocks=POKEMON.filter(p=>p.unlock>0&&p.unlock<=updPlayer.totalRaces&&p.unlock>player.totalRaces);
+        newUnlocks.forEach(p=>toast(`${p.name} unlocked! Check the Garage!`,p.emoji));
+
+        setLastResult({...result,mode:raceConfig.mode,xpEarned:totalXP,bonusXP});
+        setView("results");
+        checkAch(updRaces,updPlayer);
+        if(settings.soundOn)sfx("win");
+        launchConfetti();
+      };
+
+      const raceAgain=()=>{
+        if(!raceConfig?.selectedLectureIds?.length){setView("menu");return;}
+        const sel=lectures.filter(l=>raceConfig.selectedLectureIds.includes(l.id));
+        const allP=sel.flatMap(l=>l.passages.map(p=>({text:p,lectureId:l.id})));
+        if(!allP.length){setView("menu");return;}
+        const chosen=allP[Math.floor(Math.random()*allP.length)];
+        const diff=DIFFICULTY[settings.difficulty];
+        const pText=truncPassage(chosen.text,diff.maxLen);
+        const avg=calcAvgWPM(races);
+        const bots=BOT_POKEMON.map(b=>({...b,wpm:avg*b.mult*diff.botMult*(0.96+Math.random()*0.08)}));
+        setRaceConfig({mode:raceConfig.mode,selectedLectureIds:raceConfig.selectedLectureIds,passage:pText,bots});
+        setView("race");
+      };
+
+      const ctx={settings,setSetting,lectures,setLectures,races,setRaces,achievements,player,setPlayer,toast,POKEMON};
+      const lvl=getLevel(player.xp);
+
+      return(
+        <Ctx.Provider value={ctx}>
+          <div className="relative min-h-screen flex flex-col">
+            {/* Ambient bg */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+              <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-red-500/5 blur-3xl"></div>
+              <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-blue-500/5 blur-3xl"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-yellow-500/3 blur-3xl"></div>
+            </div>
+
+            <div className="relative z-10 w-full max-w-6xl mx-auto p-3 md:p-6 flex-1">
+              <Header view={view} setView={setView} lvl={lvl} />
+
+              <main className="glass rounded-3xl p-4 md:p-8 shadow-2xl shadow-black/30 animate-fade min-h-[60vh]">
+                {view==="menu"&&<MainMenu onStart={handleStart} onNav={setView}/>}
+                {view==="manage"&&<LectureManager/>}
+                {view==="race"&&raceConfig&&<RaceScreen config={raceConfig} onFinish={handleFinish}/>}
+                {view==="results"&&lastResult&&<ResultsScreen result={lastResult} onMenu={()=>setView("menu")} onAgain={raceAgain}/>}
+                {view==="garage"&&<Garage/>}
+                {view==="stats"&&<Stats/>}
+                {view==="achievements"&&<AchScreen/>}
+                {view==="settings"&&<SettingsScreen/>}
+              </main>
+              <footer className="text-center text-[10px] text-slate-500 mt-4 mb-2">PokemonType — Gotta Type 'Em All! All data stored locally.</footer>
+            </div>
+
+            {/* Toasts */}
+            <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+              {toasts.map(t=>(
+                <div key={t.id} className="toast-enter glass rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl border border-yellow-500/20">
+                  <span className="text-2xl">{t.icon}</span>
+                  <span className="text-sm font-semibold text-yellow-300">{t.msg}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Ctx.Provider>
+      );
+    }
+
+    /* ═══════════════════ HEADER ═══════════════════ */
+    function Header({view,setView,lvl}){
+      const {settings,setSetting,player}=useContext(Ctx);
+      const poke=POKEMON.find(p=>p.id===settings.selectedPokemon)||POKEMON[0];
+      const xpPct=Math.min(100,(lvl.currentXp/lvl.needed)*100);
+
+      return(
+        <header className="mb-4 animate-slide-up">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl md:text-4xl animate-bounce-slow">⚡</div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight" style={{fontFamily:'Orbitron,sans-serif'}}>
+                  <span className="gradient-text">PokemonType</span>
+                </h1>
+                <p className="text-[10px] md:text-xs text-slate-400">Gotta Type 'Em All!</p>
+              </div>
+            </div>
+            <nav className="flex items-center gap-1.5">
+              <button onClick={()=>setSetting("theme",settings.theme==="dark"?"light":"dark")} className="p-2 rounded-xl glass hover:brightness-110 text-sm" title="Theme">{settings.theme==="dark"?"☀️":"🌙"}</button>
+              <button onClick={()=>setSetting("soundOn",!settings.soundOn)} className="p-2 rounded-xl glass hover:brightness-110 text-sm" title="Sound">{settings.soundOn?"🔊":"🔇"}</button>
+              <button onClick={()=>setView("settings")} className="p-2 rounded-xl glass hover:brightness-110 text-sm" title="Settings">⚙️</button>
+              {view!=="menu"&&<button onClick={()=>setView("menu")} className="px-3 py-2 rounded-xl glass hover:brightness-110 text-sm font-bold">Menu</button>}
+            </nav>
+          </div>
+          {/* XP Bar */}
+          <div className="glass rounded-2xl px-4 py-2 flex items-center gap-3">
+            <div className="text-2xl">{poke.emoji}</div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="font-bold" style={{color:poke.color}}>{poke.name}</span>
+                <span className="text-slate-400">Lvl <span className="font-bold text-yellow-400 font-mono">{lvl.level}</span> — {lvl.currentXp}/{lvl.needed} XP</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
+                <div className="xp-bar h-full rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400" style={{width:`${xpPct}%`}}/>
+              </div>
+            </div>
+          </div>
+        </header>
+      );
+    }
+
+    /* ═══════════════════ MAIN MENU ═══════════════════ */
+    function MainMenu({onStart,onNav}){
+      const {settings,setSetting,lectures,races,player,achievements}=useContext(Ctx);
+      const [mode,setMode]=useState("single");
+      const [selIds,setSelIds]=useState([]);
+      const avg=calcAvgWPM(races);
+      const streak=getStreak(races);
+      const recent=races.slice(-5).reverse();
+      const lvl=getLevel(player.xp);
+      const poke=POKEMON.find(p=>p.id===settings.selectedPokemon)||POKEMON[0];
+
+      useEffect(()=>{if(lectures.length&&!selIds.length)setSelIds([lectures[0].id]);},[lectures]);
+
+      const toggle=(id)=>setSelIds(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
+      const handleStart=()=>{
+        if(!selIds.length)return alert("Select at least one topic!");
+        const sel=lectures.filter(l=>selIds.includes(l.id));
+        const allP=sel.flatMap(l=>l.passages.map(p=>({text:p})));
+        if(!allP.length)return alert("No passages found. Add some first!");
+        const chosen=allP[Math.floor(Math.random()*allP.length)];
+        const diff=DIFFICULTY[settings.difficulty];
+        const pText=truncPassage(chosen.text,diff.maxLen);
+        const bots=BOT_POKEMON.map(b=>({...b,wpm:avg*b.mult*diff.botMult*(0.96+Math.random()*0.08)}));
+        onStart({mode,selectedLectureIds:selIds,passage:pText,bots});
+      };
+
+      return(
+        <div className="space-y-5 animate-fade">
+          {/* Stats row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <MiniStat icon="⚡" label="Avg WPM" value={avg.toFixed(0)} color="text-yellow-400"/>
+            <MiniStat icon="🏁" label="Races" value={player.totalRaces} color="text-blue-400"/>
+            <MiniStat icon="🔥" label="Streak" value={`${streak}d`} color="text-orange-400"/>
+            <MiniStat icon="🏆" label="Badges" value={`${achievements.length}/${ACHIEVEMENTS.length}`} color="text-purple-400"/>
+          </div>
+
+          <div className="grid md:grid-cols-[2fr,1.2fr] gap-5">
+            <section className="space-y-3">
+              <h2 className="text-xl font-black flex items-center gap-2" style={{fontFamily:'Orbitron'}}>
+                <span className="text-2xl">{poke.emoji}</span> Battle Arena
+                <span className="text-[9px] font-medium px-2 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-sans">RACE</span>
+              </h2>
+
+              {/* Difficulty */}
+              <div className="flex gap-2">
+                {Object.entries(DIFFICULTY).map(([k,v])=>(
+                  <button key={k} onClick={()=>setSetting("difficulty",k)}
+                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${settings.difficulty===k?"bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-lg shadow-red-500/20":"glass-dark border border-transparent hover:border-slate-600 text-slate-400"}`}>
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Mode */}
+              <div className="flex gap-2">
+                {[["single","Single Topic"],["mixed","Mixed Review"]].map(([k,l])=>(
+                  <button key={k} onClick={()=>setMode(k)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${mode===k?"bg-white text-slate-900 shadow-lg":"glass-dark border border-transparent hover:border-slate-600"}`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+
+              {/* Topic selection */}
+              <div className="glass-dark rounded-2xl p-3 border border-slate-700/50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold">Choose {mode==="single"?"a":"your"} topic{mode==="mixed"?"s":""}</span>
+                  {mode==="mixed"&&lectures.length>0&&(
+                    <button className="text-[10px] text-slate-400 hover:text-white underline" onClick={()=>setSelIds(selIds.length===lectures.length?[]:lectures.map(l=>l.id))}>
+                      {selIds.length===lectures.length?"Clear":"Select all"}
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-48 overflow-auto space-y-1 pr-1">
+                  {lectures.length===0?(
+                    <p className="text-xs text-slate-500 py-6 text-center">No topics yet! Go to Manage to add your study material.</p>
+                  ):lectures.map(lec=>{
+                    const s=selIds.includes(lec.id);
+                    return(
+                      <label key={lec.id} className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-all ${s?"bg-yellow-500/15 border border-yellow-400/40":"glass-dark border border-transparent hover:border-slate-600"}`}>
+                        <div className="flex items-center gap-2.5">
+                          <input type={mode==="single"?"radio":"checkbox"} name="topic" checked={s}
+                            onChange={()=>mode==="single"?setSelIds([lec.id]):toggle(lec.id)} className="accent-yellow-400"/>
+                          <span className="font-medium">{lec.name}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">{lec.passages.length} passage{lec.passages.length!==1?"s":""}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button onClick={handleStart} disabled={!lectures.length}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white font-black text-lg shadow-xl shadow-red-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:shadow-2xl hover:shadow-yellow-500/30 active:scale-[0.97]"
+                style={{fontFamily:'Orbitron'}}>
+                START RACE!
+              </button>
+            </section>
+
+            <section className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <MenuBtn icon="📝" label="Manage" desc="Topics & passages" onClick={()=>onNav("manage")}/>
+                <MenuBtn icon="🏠" label="Garage" desc="Your Pokemon" onClick={()=>onNav("garage")}/>
+                <MenuBtn icon="📊" label="Stats" desc="Performance" onClick={()=>onNav("stats")}/>
+                <MenuBtn icon="🏆" label="Badges" desc={`${achievements.length} earned`} onClick={()=>onNav("achievements")}/>
+              </div>
+
+              <div className="glass-dark rounded-2xl p-3 border border-slate-700/50">
+                <h3 className="text-sm font-black mb-2 flex items-center gap-1.5">🏁 Recent Races</h3>
+                {recent.length===0?(
+                  <p className="text-[10px] text-slate-500 text-center py-3">No races yet. Let's go!</p>
+                ):(
+                  <div className="space-y-1.5">
+                    {recent.map(r=>{
+                      const p=POKEMON.find(x=>x.id===r.pokemon)||POKEMON[0];
+                      return(
+                        <div key={r.id} className="flex items-center justify-between text-xs glass-dark rounded-xl px-3 py-2">
+                          <span>{p.emoji}</span>
+                          <span className="font-mono font-bold text-yellow-400">{r.wpm.toFixed(0)} WPM</span>
+                          <span className="font-mono text-blue-300">{r.accuracy.toFixed(0)}%</span>
+                          <span className="text-slate-500">{r.mode}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        </div>
+      );
+    }
+
+    function MiniStat({icon,label,value,color}){
+      return(
+        <div className="glass-dark rounded-2xl p-3 border border-slate-700/30 text-center hover:border-slate-600 transition-all">
+          <div className="text-lg mb-0.5">{icon}</div>
+          <div className={`text-xl font-black font-mono ${color}`}>{value}</div>
+          <div className="text-[9px] text-slate-400 uppercase tracking-wider">{label}</div>
+        </div>
+      );
+    }
+    function MenuBtn({icon,label,desc,onClick}){
+      return(
+        <button onClick={onClick} className="glass-dark rounded-2xl p-3 border border-slate-700/30 text-left hover:border-slate-500 transition-all group active:scale-[0.96]">
+          <div className="text-lg mb-0.5 group-hover:scale-110 transition-transform inline-block">{icon}</div>
+          <div className="text-sm font-bold">{label}</div>
+          <div className="text-[9px] text-slate-400">{desc}</div>
+        </button>
+      );
+    }
+
+    /* ═══════════════════ RACE SCREEN ═══════════════════ */
+    function RaceScreen({config,onFinish}){
+      const {settings,player,setPlayer}=useContext(Ctx);
+      const {passage,bots}=config;
+      const poke=POKEMON.find(p=>p.id===settings.selectedPokemon)||POKEMON[0];
+      const [phase,setPhase]=useState("countdown");
+      const [cd,setCd]=useState(3);
+      const [input,setInput]=useState("");
+      const [startTime,setStartTime]=useState(null);
+      const [now,setNow]=useState(null);
+      const [combo,setCombo]=useState(0);
+      const [bestCombo,setBestCombo]=useState(0);
+      const [nitroActive,setNitroActive]=useState(false);
+      const [nitroCharge,setNitroCharge]=useState(player.nitroCharge||0);
+      const [speedLines,setSpeedLines]=useState([]);
+      const [shaking,setShaking]=useState(false);
+      const [placement,setPlacement]=useState(null);
+      const inputRef=useRef(null);
+      const passRef=useRef(null);
+      const cursorRef=useRef(null);
+
+      // Countdown
+      useEffect(()=>{
+        if(phase!=="countdown")return;
+        if(cd<=0){setPhase("racing");if(settings.soundOn)sfx("go");setTimeout(()=>inputRef.current?.focus(),50);return;}
+        if(settings.soundOn)sfx("tick");
+        const t=setTimeout(()=>setCd(c=>c-1),700);
+        return()=>clearTimeout(t);
+      },[phase,cd]);
+
+      // Timer
+      useEffect(()=>{
+        if(phase!=="racing"||!startTime)return;
+        const iv=setInterval(()=>setNow(Date.now()),60);
+        return()=>clearInterval(iv);
+      },[phase,startTime]);
+
+      // ESC
+      useEffect(()=>{
+        const h=(e)=>{if(e.key==="Escape"){e.preventDefault();setPhase("countdown");setCd(3);setInput("");setStartTime(null);setNow(null);setCombo(0);setBestCombo(0);setNitroActive(false);setPlacement(null);}};
+        window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);
+      },[]);
+
+      // Auto-scroll
+      useEffect(()=>{
+        if(cursorRef.current&&passRef.current)cursorRef.current.scrollIntoView({block:"center",inline:"nearest"});
+      },[input.length]);
+
+      // Speed lines effect
+      const addSpeedLine=()=>{
+        const id=Date.now()+Math.random();
+        const line={id,top:Math.random()*80+10,color:poke.color};
+        setSpeedLines(p=>[...p,line]);
+        setTimeout(()=>setSpeedLines(p=>p.filter(l=>l.id!==id)),500);
+      };
+
+      const handleChange=(e)=>{
+        if(phase!=="racing")return;
+        const val=e.target.value;
+        if(!startTime&&val.length>0){const t=Date.now();setStartTime(t);setNow(t);}
+
+        const ni=val.length-1;
+        if(val.length>input.length&&ni<passage.length){
+          if(normalizeChar(val[ni])===normalizeChar(passage[ni])){
+            const nc=combo+1;setCombo(nc);
+            if(nc>bestCombo)setBestCombo(nc);
+            if(nc>0&&nc%10===0&&settings.soundOn)sfx("combo");
+            if(settings.soundOn)sfx("key");
+            // Build nitro
+            setNitroCharge(p=>Math.min(100,p+2));
+            if(nc%5===0)addSpeedLine();
+          }else{
+            setCombo(0);
+            if(settings.soundOn)sfx("err");
+            setShaking(true);setTimeout(()=>setShaking(false),300);
+          }
+        }
+        setInput(val);
+      };
+
+      // Nitro boost: press Tab
+      useEffect(()=>{
+        const h=(e)=>{
+          if(e.key==="Tab"&&phase==="racing"&&nitroCharge>=50){
+            e.preventDefault();
+            setNitroActive(true);setNitroCharge(p=>p-50);
+            setPlayer(p=>({...p,nitroUses:(p.nitroUses||0)+1,nitroCharge:nitroCharge-50}));
+            if(settings.soundOn)sfx("nitro");
+            for(let i=0;i<5;i++)setTimeout(()=>addSpeedLine(),i*80);
+            setTimeout(()=>setNitroActive(false),3000);
+          }
+        };
+        window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);
+      },[phase,nitroCharge,settings.soundOn]);
+
+      const totalC=passage.length;
+      const typedC=input.length;
+      let correctC=0;
+      for(let i=0;i<typedC&&i<totalC;i++){if(normalizeChar(input[i])===normalizeChar(passage[i]))correctC++;}
+
+      const elMs=startTime&&now?Math.max(now-startTime,1):1;
+      const elMin=elMs/60000;
+      const nitroBoost=nitroActive?1.15:1;
+      const pokeSpeed=poke.speed*nitroBoost;
+      const rawWpm=correctC>0?(correctC/5)/elMin:0;
+      const displayWpm=rawWpm;
+      const accuracy=typedC>0?(correctC/typedC)*100:100;
+      const progress=totalC?Math.min(1,typedC/totalC):0;
+      const elSec=elMs/1000;
+
+      // Bot states
+      const botStates=bots.map(bot=>{
+        const cps=(bot.wpm*5)/60;
+        const f=Math.min(1,(cps*elSec)/totalC);
+        return{...bot,fraction:f};
+      });
+
+      // Finish
+      useEffect(()=>{
+        if(phase==="racing"&&typedC>=totalC&&startTime){
+          setPhase("finished");
+          // Calculate placement
+          const myFrac=1;
+          const botsAhead=botStates.filter(b=>b.fraction>=myFrac).length;
+          setPlacement(botsAhead+1);
+          setTimeout(()=>onFinish({wpm:displayWpm,accuracy,timeSec:elSec,bestCombo,placement:botsAhead+1}),500);
+        }
+      },[typedC,totalC,phase,startTime]);
+
+      // COUNTDOWN
+      if(phase==="countdown"){
+        return(
+          <div className="flex flex-col items-center justify-center py-16 animate-fade">
+            <div className="text-6xl mb-4 animate-bounce-slow">{poke.emoji}</div>
+            <div className="text-7xl md:text-9xl font-black animate-count gradient-text" style={{fontFamily:'Orbitron'}} key={cd}>
+              {cd>0?cd:"GO!"}
+            </div>
+            <p className="text-slate-400 mt-4 text-sm">Get ready, {poke.name}!</p>
+            <p className="text-slate-500 mt-2 text-[10px]">ESC to restart · TAB to use Nitro Boost</p>
+          </div>
+        );
+      }
+
+      return(
+        <div className={`space-y-3 animate-fade ${shaking?"animate-shake":""}`}>
+          {/* Race Track */}
+          <div className="race-track-bg rounded-2xl overflow-hidden border border-slate-700/30">
+            <div className="px-3 py-1.5 flex items-center justify-between border-b border-white/5">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400" style={{fontFamily:'Orbitron'}}>Race Track</span>
+              <span className="text-[10px] text-slate-500 font-mono">{elSec.toFixed(1)}s</span>
+            </div>
+            <div className="relative">
+              {/* Speed lines */}
+              {speedLines.map(l=>(
+                <div key={l.id} className="speed-line" style={{top:`${l.top}%`,left:'80%',width:'120px',background:`linear-gradient(90deg,${l.color},transparent)`}}/>
+              ))}
+              {/* Player track */}
+              <div className="track-lane h-12 relative">
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold z-10 w-16">You</div>
+                <div className="absolute left-20 right-4 top-0 bottom-0">
+                  <div className={`pokemon-racer text-2xl ${startTime?"running":""} ${nitroActive?"nitro-active":""}`}
+                    style={{left:`${progress*90}%`}}>
+                    {poke.emoji}
+                    {nitroActive&&<span className="absolute -right-4 text-sm">💨</span>}
+                  </div>
+                  {/* Track line */}
+                  <div className="absolute bottom-1 left-0 right-0 h-1 rounded bg-slate-700/50">
+                    <div className="h-full rounded bg-gradient-to-r from-yellow-400 to-red-400 transition-all duration-100" style={{width:`${progress*100}%`}}/>
+                  </div>
+                </div>
+              </div>
+              {/* Bot tracks */}
+              {botStates.map((bot,i)=>(
+                <div key={bot.name} className="track-lane h-10 relative">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 w-16 truncate">{bot.name}</div>
+                  <div className="absolute left-20 right-4 top-0 bottom-0">
+                    <div className={`pokemon-racer text-xl ${startTime?"running":""}`} style={{left:`${bot.fraction*90}%`}}>
+                      {bot.emoji}
+                    </div>
+                    <div className="absolute bottom-1 left-0 right-0 h-0.5 rounded bg-slate-700/30">
+                      <div className={`h-full rounded ${bot.color} transition-all duration-100`} style={{width:`${bot.fraction*100}%`}}/>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-[2.5fr,1fr] gap-3">
+            <div className="space-y-3">
+              {/* Passage */}
+              <div className="glass-dark rounded-2xl p-4 border border-slate-700/30">
+                <div ref={passRef} className="font-mono text-base md:text-lg leading-loose max-h-44 overflow-auto pr-2">
+                  {passage.split("").map((ch,idx)=>{
+                    const typed=input[idx];
+                    let cls="passage-char ";
+                    if(typed===undefined)cls+="text-slate-500";
+                    else if(normalizeChar(typed)===normalizeChar(ch))cls+="bg-green-500/30 text-green-200 rounded-sm";
+                    else cls+="bg-red-500/40 text-red-200 rounded-sm underline";
+                    if(idx===typedC)cls+=" passage-cursor";
+                    return <span key={idx} className={cls} ref={idx===typedC?cursorRef:null}>{ch}</span>;
+                  })}
+                </div>
+              </div>
+
+              {/* Input */}
+              <div className={`glass-dark rounded-2xl p-3 border ${nitroActive?"border-yellow-400/50 shadow-lg shadow-yellow-500/10":"border-slate-700/30"}`}>
+                <textarea ref={inputRef} value={input} onChange={handleChange} rows={2}
+                  className="w-full bg-transparent rounded-xl border-0 px-2 py-2 text-sm font-mono focus:outline-none resize-none"
+                  placeholder="Start typing..." autoFocus={phase==="racing"}/>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {/* Live stats */}
+              <div className="glass-dark rounded-2xl p-3 border border-slate-700/30 text-center">
+                <div className="text-3xl font-black font-mono text-yellow-400" style={{textShadow:'0 0 15px rgba(250,204,21,0.4)'}}>{displayWpm.toFixed(0)}</div>
+                <div className="text-[9px] text-slate-400 uppercase tracking-widest">WPM</div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div><div className="text-lg font-bold font-mono text-blue-400">{accuracy.toFixed(0)}%</div><div className="text-[8px] text-slate-500">ACC</div></div>
+                  <div><div className="text-lg font-bold font-mono text-purple-400">{(progress*100).toFixed(0)}%</div><div className="text-[8px] text-slate-500">DONE</div></div>
+                </div>
+              </div>
+
+              {/* Combo */}
+              {combo>=3&&(
+                <div className="combo-badge glass-dark rounded-2xl p-2 border border-yellow-500/30 text-center">
+                  <div className="text-xl font-black font-mono text-yellow-400">{combo}x</div>
+                  <div className="text-[8px] text-yellow-300/60 uppercase">Combo</div>
+                </div>
+              )}
+
+              {/* Nitro gauge */}
+              <div className="glass-dark rounded-2xl p-3 border border-slate-700/30">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Nitro</span>
+                  <span className="text-[9px] text-slate-500">{nitroCharge.toFixed(0)}%</span>
+                </div>
+                <div className="h-3 rounded-full bg-slate-800 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-200 ${nitroCharge>=50?"bg-gradient-to-r from-yellow-400 to-red-400 shadow-sm shadow-yellow-400/30":"bg-slate-600"}`}
+                    style={{width:`${nitroCharge}%`}}/>
+                </div>
+                {nitroCharge>=50&&<div className="text-[8px] text-yellow-300 mt-1 text-center font-bold animate-pulse">Press TAB to boost!</div>}
+                {nitroActive&&<div className="text-[9px] text-yellow-400 mt-1 text-center font-black">🚀 NITRO ACTIVE!</div>}
+              </div>
+            </div>
+          </div>
+          <div className="text-center text-[10px] text-slate-500">ESC restart · TAB nitro boost · {typedC}/{totalC} chars</div>
+        </div>
+      );
+    }
+
+    /* ═══════════════════ RESULTS ═══════════════════ */
+    function ResultsScreen({result,onMenu,onAgain}){
+      const {settings}=useContext(Ctx);
+      const poke=POKEMON.find(p=>p.id===settings.selectedPokemon)||POKEMON[0];
+
+      useEffect(()=>{
+        const h=(e)=>{if(e.key==="Enter"){e.preventDefault();onAgain?.();}};
+        window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);
+      },[onAgain]);
+
+      const place=result.placement||1;
+      const placeText=["","1st","2nd","3rd","4th","5th"][place]||`${place}th`;
+      const placeEmoji=place===1?"🥇":place===2?"🥈":place===3?"🥉":"";
+      const ratingMsg=result.wpm>=90?"LEGENDARY!":result.wpm>=70?"SUPER EFFECTIVE!":result.wpm>=50?"Great job!":result.wpm>=30?"Keep training!":"Don't give up!";
+
+      return(
+        <div className="space-y-6 animate-fade">
+          <div className="text-center py-4 animate-finish">
+            <div className="text-6xl mb-2">{poke.emoji}</div>
+            <div className="text-4xl mb-1">{placeEmoji}</div>
+            <h2 className="text-3xl md:text-4xl font-black gradient-text" style={{fontFamily:'Orbitron'}}>{placeText} Place!</h2>
+            <p className="text-slate-400 text-sm mt-1">{ratingMsg}</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <ResultCard label="WPM" value={result.wpm.toFixed(1)} color="text-yellow-400" glow/>
+            <ResultCard label="Accuracy" value={`${result.accuracy.toFixed(1)}%`} color="text-blue-400"/>
+            <ResultCard label="Time" value={`${result.timeSec.toFixed(1)}s`} color="text-purple-400"/>
+            <ResultCard label="Best Combo" value={`${result.bestCombo}x`} color="text-orange-400"/>
+          </div>
+
+          {/* XP earned */}
+          <div className="glass-dark rounded-2xl p-4 border border-yellow-500/20 text-center">
+            <div className="text-sm text-slate-400 mb-1">Experience Earned</div>
+            <div className="text-3xl font-black text-yellow-400 font-mono" style={{textShadow:'0 0 20px rgba(250,204,21,0.3)'}}>
+              +{result.xpEarned} XP
+            </div>
+            {result.bonusXP>0&&<div className="text-xs text-green-400 mt-1">+{result.bonusXP} combo bonus!</div>}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <button onClick={onAgain}
+              className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white font-black text-lg shadow-xl hover:shadow-2xl transition-all active:scale-[0.97]"
+              style={{fontFamily:'Orbitron'}}>
+              RACE AGAIN
+            </button>
+            <button onClick={onMenu}
+              className="px-8 py-3.5 rounded-2xl glass border border-slate-600 font-bold transition-all hover:border-slate-400">
+              Back to Menu
+            </button>
+          </div>
+          <p className="text-center text-[10px] text-slate-500">Press Enter to race again</p>
+        </div>
+      );
+    }
+    function ResultCard({label,value,color,glow}){
+      return(
+        <div className="glass-dark rounded-2xl p-4 border border-slate-700/30 text-center">
+          <div className={`text-3xl font-black font-mono ${color} ${glow?'':''}` } style={glow?{textShadow:'0 0 15px rgba(250,204,21,0.4)'}:{}}>{value}</div>
+          <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">{label}</div>
+        </div>
+      );
+    }
+
+    /* ═══════════════════ GARAGE ═══════════════════ */
+    function Garage(){
+      const {settings,setSetting,player}=useContext(Ctx);
+      return(
+        <div className="space-y-5 animate-fade">
+          <h2 className="text-2xl font-black flex items-center gap-2" style={{fontFamily:'Orbitron'}}>🏠 Pokemon Garage</h2>
+          <p className="text-sm text-slate-400">Choose your racing Pokemon! Complete more races to unlock new ones.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {POKEMON.map(p=>{
+              const unlocked=player.totalRaces>=p.unlock;
+              const selected=settings.selectedPokemon===p.id;
+              return(
+                <button key={p.id} disabled={!unlocked}
+                  onClick={()=>unlocked&&setSetting("selectedPokemon",p.id)}
+                  className={`rounded-2xl p-4 border text-left transition-all ${selected?"border-yellow-400/60 bg-yellow-500/10 shadow-lg shadow-yellow-500/10":unlocked?"glass-dark border-slate-700/30 hover:border-slate-500":"glass-dark border-slate-800 opacity-40 cursor-not-allowed"}`}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`text-4xl ${unlocked?"":"grayscale opacity-50"}`}>{p.emoji}</div>
+                    <div>
+                      <div className={`font-black ${selected?"text-yellow-400":unlocked?"text-slate-200":"text-slate-500"}`}>{p.name}</div>
+                      <div className="text-[10px] text-slate-400">{p.type} type</div>
+                    </div>
+                    {selected&&<span className="ml-auto text-yellow-400 text-xs font-bold px-2 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/30">SELECTED</span>}
+                  </div>
+                  <p className="text-[10px] text-slate-400 mb-1">{p.desc}</p>
+                  {p.speed>1&&<div className="text-[9px] text-green-400 font-bold">+{((p.speed-1)*100).toFixed(0)}% speed bonus</div>}
+                  {!unlocked&&<div className="text-[9px] text-red-400 font-bold mt-1">🔒 Unlocks at {p.unlock} races</div>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    /* ═══════════════════ LECTURE MANAGER ═══════════════════ */
+    function LectureManager(){
+      const {lectures,setLectures}=useContext(Ctx);
+      const [newName,setNewName]=useState("");
+      const [selId,setSelId]=useState(lectures[0]?.id??null);
+      const [newPass,setNewPass]=useState("");
+      const sel=lectures.find(l=>l.id===selId)||null;
+
+      const addLec=()=>{const n=newName.trim();if(!n)return;const id="lec_"+Date.now();setLectures([...lectures,{id,name:n,passages:[]}]);setNewName("");setSelId(id);};
+      const delLec=(id)=>{if(!confirm("Delete this topic and all passages?"))return;const u=lectures.filter(l=>l.id!==id);setLectures(u);if(selId===id)setSelId(u[0]?.id??null);};
+      const renLec=(id)=>{const l=lectures.find(x=>x.id===id);const n=prompt("Rename:",l?.name);if(n?.trim())setLectures(lectures.map(x=>x.id===id?{...x,name:n.trim()}:x));};
+      const addPass=()=>{const t=newPass.trim();if(!t||!sel)return;setLectures(lectures.map(l=>l.id===sel.id?{...l,passages:[...l.passages,t]}:l));setNewPass("");};
+      const updPass=(i,t)=>{if(!sel)return;setLectures(lectures.map(l=>l.id===sel.id?{...l,passages:l.passages.map((p,j)=>j===i?t:p)}:l));};
+      const delPass=(i)=>{if(!sel)return;setLectures(lectures.map(l=>l.id===sel.id?{...l,passages:l.passages.filter((_,j)=>j!==i)}:l));};
+
+      return(
+        <div className="animate-fade">
+          <h2 className="text-2xl font-black mb-4 flex items-center gap-2" style={{fontFamily:'Orbitron'}}>📝 Manage Topics</h2>
+          <p className="text-xs text-slate-400 mb-4">Add study material from any class — biology, history, literature, anything!</p>
+          <div className="grid md:grid-cols-[1.2fr,2fr] gap-5">
+            <section className="space-y-3">
+              <div className="glass-dark rounded-2xl p-3 border border-slate-700/30 space-y-3">
+                <div className="flex gap-2">
+                  <input type="text" value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addLec()}
+                    placeholder="New topic name..." className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50"/>
+                  <button onClick={addLec} className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-yellow-500 text-white text-sm font-bold">Add</button>
+                </div>
+                <div className="max-h-72 overflow-auto space-y-1">
+                  {lectures.length===0&&<p className="text-[10px] text-slate-500 text-center py-4">No topics yet.</p>}
+                  {lectures.map(lec=>(
+                    <div key={lec.id} onClick={()=>setSelId(lec.id)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm cursor-pointer transition-all ${selId===lec.id?"bg-yellow-500/15 border border-yellow-400/40":"glass-dark border border-transparent hover:border-slate-600"}`}>
+                      <div><div className="font-bold">{lec.name}</div><div className="text-[9px] text-slate-400">{lec.passages.length} passage{lec.passages.length!==1?"s":""}</div></div>
+                      <div className="flex gap-1" onClick={e=>e.stopPropagation()}>
+                        <button className="text-[10px] px-1.5 py-0.5 rounded hover:bg-slate-700" onClick={()=>renLec(lec.id)}>✏️</button>
+                        <button className="text-[10px] px-1.5 py-0.5 rounded hover:bg-slate-700" onClick={()=>delLec(lec.id)}>🗑️</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+            <section className="space-y-3">
+              <h3 className="text-lg font-bold">{sel?`Passages — ${sel.name}`:"Select a topic"}</h3>
+              {sel?(
+                <>
+                  <div className="glass-dark rounded-2xl p-3 border border-slate-700/30 space-y-2">
+                    <textarea value={newPass} onChange={e=>setNewPass(e.target.value)} rows={3}
+                      placeholder="Paste or type study material here..." className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none"/>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] text-slate-500">{newPass.length} chars</span>
+                      <button onClick={addPass} className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-yellow-500 text-white text-sm font-bold">Add Passage</button>
+                    </div>
+                  </div>
+                  <div className="glass-dark rounded-2xl p-3 border border-slate-700/30 max-h-72 overflow-auto space-y-2">
+                    <h4 className="text-xs font-bold">Passages ({sel.passages.length})</h4>
+                    {sel.passages.length===0?<p className="text-[10px] text-slate-500 text-center py-3">No passages yet.</p>:
+                      sel.passages.map((p,i)=><PassageItem key={i} index={i} text={p} onChange={t=>updPass(i,t)} onDelete={()=>delPass(i)}/>)}
+                  </div>
+                </>
+              ):<p className="text-sm text-slate-500">Select a topic on the left.</p>}
+            </section>
+          </div>
+        </div>
+      );
+    }
+    function PassageItem({index,text,onChange,onDelete}){
+      const [editing,setEditing]=useState(false);
+      const [draft,setDraft]=useState(text);
+      useEffect(()=>setDraft(text),[text]);
+      return(
+        <div className="border border-slate-700/30 rounded-xl p-2.5 text-xs bg-slate-900/40">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-slate-400 font-bold">#{index+1} <span className="font-normal text-slate-600">({text.length}c)</span></span>
+            <div className="flex gap-1.5">
+              {editing?<button className="text-green-400 hover:text-green-300 font-bold" onClick={()=>{onChange(draft);setEditing(false);}}>Save</button>:
+                <button className="text-blue-400 hover:text-blue-300" onClick={()=>setEditing(true)}>Edit</button>}
+              <button className="text-red-400 hover:text-red-300" onClick={onDelete}>Del</button>
+            </div>
+          </div>
+          {editing?<textarea value={draft} onChange={e=>setDraft(e.target.value)} rows={2} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-[11px] font-mono focus:outline-none resize-none"/>:
+            <p className="text-slate-300 leading-relaxed">{text.length>180?text.substring(0,180)+"...":text}</p>}
+        </div>
+      );
+    }
+
+    /* ═══════════════════ STATS ═══════════════════ */
+    function Stats(){
+      const {races,player}=useContext(Ctx);
+      const stats=getStats(races,player);
+      const avg=calcAvgWPM(races);
+      const avgAcc=races.length?races.reduce((a,r)=>a+r.accuracy,0)/races.length:0;
+      const totalTime=races.reduce((a,r)=>a+(r.timeSec||0),0);
+      const chartData=races.slice(-40);
+      const maxW=Math.max(...chartData.map(r=>r.wpm),1);
+      const lvl=getLevel(player.xp);
+
+      return(
+        <div className="space-y-5 animate-fade">
+          <h2 className="text-2xl font-black flex items-center gap-2" style={{fontFamily:'Orbitron'}}>📊 Statistics</h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <MiniStat icon="🏁" label="Races" value={stats.totalRaces} color="text-blue-400"/>
+            <MiniStat icon="⚡" label="Best WPM" value={stats.bestWpm.toFixed(0)} color="text-yellow-400"/>
+            <MiniStat icon="📈" label="Avg WPM" value={avg.toFixed(0)} color="text-green-400"/>
+            <MiniStat icon="🎯" label="Avg Acc" value={`${avgAcc.toFixed(1)}%`} color="text-blue-300"/>
+            <MiniStat icon="💯" label="Perfect" value={stats.perfectRaces} color="text-pink-400"/>
+            <MiniStat icon="🔥" label="Streak" value={`${stats.streak}d`} color="text-orange-400"/>
+            <MiniStat icon="👑" label="Best Combo" value={`${stats.bestCombo}x`} color="text-amber-400"/>
+            <MiniStat icon="⏱️" label="Time" value={`${(totalTime/60).toFixed(0)}m`} color="text-purple-400"/>
+          </div>
+
+          {/* WPM Chart */}
+          {chartData.length>1&&(
+            <div className="glass-dark rounded-2xl p-4 border border-slate-700/30">
+              <h3 className="text-sm font-black mb-3" style={{fontFamily:'Orbitron'}}>WPM Trend</h3>
+              <div className="flex items-end gap-[2px] h-36">
+                {chartData.map((r,i)=>{
+                  const h=(r.wpm/maxW)*100;
+                  const col=r.wpm>=70?"from-yellow-400 to-red-400":r.wpm>=50?"from-green-400 to-blue-400":"from-blue-400 to-purple-400";
+                  return(
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end group relative">
+                      <div className="absolute -top-7 glass text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity font-mono whitespace-nowrap z-10">
+                        {r.wpm.toFixed(0)} WPM · {r.accuracy.toFixed(0)}%
+                      </div>
+                      <div className={`w-full rounded-t bg-gradient-to-t ${col} transition-all hover:brightness-125`} style={{height:`${Math.max(h,3)}%`}}/>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between text-[8px] text-slate-500 mt-1">
+                <span>Oldest</span><span>Last {chartData.length} races</span><span>Latest</span>
+              </div>
+            </div>
+          )}
+
+          {/* Race log */}
+          {races.length>0&&(
+            <div className="glass-dark rounded-2xl p-4 border border-slate-700/30">
+              <h3 className="text-sm font-black mb-3" style={{fontFamily:'Orbitron'}}>Race Log</h3>
+              <div className="max-h-60 overflow-auto">
+                <table className="w-full text-[10px]">
+                  <thead><tr className="text-slate-400 border-b border-slate-700">
+                    <th className="py-1.5 text-left">#</th><th className="py-1.5 text-left">Date</th><th className="py-1.5">Pokemon</th>
+                    <th className="py-1.5 text-right">WPM</th><th className="py-1.5 text-right">Acc</th><th className="py-1.5 text-right">XP</th>
+                  </tr></thead>
+                  <tbody>{[...races].reverse().map((r,i)=>{
+                    const pk=POKEMON.find(x=>x.id===r.pokemon)||POKEMON[0];
+                    return(
+                      <tr key={r.id} className="border-b border-slate-800/30 hover:bg-slate-800/20">
+                        <td className="py-1 text-slate-500">{races.length-i}</td>
+                        <td className="py-1 text-slate-400">{new Date(r.timestamp).toLocaleDateString()}</td>
+                        <td className="py-1 text-center">{pk.emoji}</td>
+                        <td className="py-1 text-right font-mono text-yellow-400">{r.wpm.toFixed(1)}</td>
+                        <td className="py-1 text-right font-mono text-blue-300">{r.accuracy.toFixed(1)}%</td>
+                        <td className="py-1 text-right font-mono text-green-400">+{r.xpEarned||0}</td>
+                      </tr>
+                    );
+                  })}</tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ═══════════════════ ACHIEVEMENTS ═══════════════════ */
+    function AchScreen(){
+      const {achievements}=useContext(Ctx);
+      return(
+        <div className="space-y-5 animate-fade">
+          <h2 className="text-2xl font-black flex items-center gap-2" style={{fontFamily:'Orbitron'}}>🏆 Achievements</h2>
+          <p className="text-sm text-slate-400">{achievements.length} of {ACHIEVEMENTS.length} unlocked</p>
+          <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 rounded-full transition-all" style={{width:`${(achievements.length/ACHIEVEMENTS.length)*100}%`}}/>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {ACHIEVEMENTS.map(a=>{
+              const u=achievements.includes(a.id);
+              return(
+                <div key={a.id} className={`rounded-2xl p-4 border transition-all ${u?"glass-dark border-yellow-500/30 bg-yellow-500/5":"glass-dark border-slate-800 opacity-40"}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`text-3xl ${u?"":"grayscale"}`}>{a.icon}</div>
+                    <div>
+                      <div className={`text-sm font-black ${u?"text-yellow-300":"text-slate-400"}`}>{a.name}</div>
+                      <div className="text-[10px] text-slate-400">{a.desc}</div>
+                    </div>
+                  </div>
+                  {u&&<div className="text-[8px] text-yellow-500 mt-2 font-black uppercase tracking-widest">Caught!</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    /* ═══════════════════ SETTINGS ═══════════════════ */
+    function SettingsScreen(){
+      const {settings,setSetting,lectures,setLectures,races,setRaces,player,setPlayer}=useContext(Ctx);
+      const fileRef=useRef(null);
+      const exportAll=()=>{
+        const d={version:3,date:new Date().toISOString(),lectures:load(STORE_KEYS.lectures,[]),races:load(STORE_KEYS.races,[]),settings:load(STORE_KEYS.settings,DEFAULT_SETTINGS),
+          achievements:load(STORE_KEYS.achievements,[]),player:load(STORE_KEYS.player,DEFAULT_PLAYER)};
+        const b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+        const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=`pokemontype-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);
+      };
+      const importAll=(e)=>{
+        const f=e.target.files?.[0];if(!f)return;
+        const r=new FileReader();
+        r.onload=(ev)=>{
+          try{const d=JSON.parse(ev.target.result);
+            if(d.lectures){save(STORE_KEYS.lectures,d.lectures);setLectures(d.lectures);}
+            if(d.races){save(STORE_KEYS.races,d.races);setRaces(d.races);}
+            if(d.settings)save(STORE_KEYS.settings,d.settings);
+            if(d.achievements)save(STORE_KEYS.achievements,d.achievements);
+            if(d.player){save(STORE_KEYS.player,d.player);setPlayer(d.player);}
+            alert("Imported! Refreshing...");location.reload();
+          }catch{alert("Invalid file!");}
+        };r.readAsText(f);
+      };
+
+      return(
+        <div className="space-y-5 animate-fade max-w-2xl mx-auto">
+          <h2 className="text-2xl font-black flex items-center gap-2" style={{fontFamily:'Orbitron'}}>⚙️ Settings</h2>
+          <div className="space-y-3">
+            <SetRow label="Theme" desc="Visual theme">
+              <select value={settings.theme} onChange={e=>setSetting("theme",e.target.value)} className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm">
+                <option value="dark">Dark</option><option value="light">Light</option>
+              </select>
+            </SetRow>
+            <SetRow label="Difficulty" desc="Passage length & bot speed">
+              <select value={settings.difficulty} onChange={e=>setSetting("difficulty",e.target.value)} className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm">
+                <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+              </select>
+            </SetRow>
+            <SetRow label="Sound" desc="Effects & music">
+              <button onClick={()=>setSetting("soundOn",!settings.soundOn)}
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${settings.soundOn?"bg-yellow-500/20 text-yellow-300 border border-yellow-500/30":"glass-dark border border-slate-700 text-slate-400"}`}>
+                {settings.soundOn?"On":"Off"}
+              </button>
+            </SetRow>
+          </div>
+          <hr className="border-slate-700/50"/>
+          <h3 className="text-lg font-black" style={{fontFamily:'Orbitron'}}>Data</h3>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={exportAll} className="px-4 py-2 rounded-xl glass border border-slate-700 text-sm hover:border-slate-500">📤 Export</button>
+            <button onClick={()=>fileRef.current?.click()} className="px-4 py-2 rounded-xl glass border border-slate-700 text-sm hover:border-slate-500">📥 Import</button>
+            <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={importAll}/>
+            <button onClick={()=>{if(confirm("Delete ALL data?")){Object.values(STORE_KEYS).forEach(k=>localStorage.removeItem(k));location.reload();}}}
+              className="px-4 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm hover:bg-red-500/10">🗑️ Clear All</button>
+          </div>
+        </div>
+      );
+    }
+    function SetRow({label,desc,children}){
+      return(
+        <div className="glass-dark rounded-2xl p-4 border border-slate-700/30 flex items-center justify-between">
+          <div><div className="text-sm font-bold">{label}</div><div className="text-[10px] text-slate-400">{desc}</div></div>
+          {children}
+        </div>
+      );
+    }
+
+    /* ═══════════════════ MOUNT ═══════════════════ */
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  </script>
+</body>
+</html>
