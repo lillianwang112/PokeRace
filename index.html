@@ -1514,19 +1514,30 @@
                 <div className="max-h-48 overflow-auto space-y-1 pr-1">
                   {lectures.length===0?(
                     <p className="text-xs text-slate-500 py-6 text-center">No topics yet! Go to Manage to add your study material.</p>
-                  ):lectures.map(lec=>{
-                    const s=selIds.includes(lec.id);
-                    return(
-                      <label key={lec.id} className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-all ${s?"bg-yellow-500/15 border border-yellow-400/40":"glass-dark border border-transparent hover:border-slate-600"}`}>
-                        <div className="flex items-center gap-2.5">
-                          <input type={mode==="single"?"radio":"checkbox"} name="topic" checked={s}
-                            onChange={()=>mode==="single"?setSelIds([lec.id]):toggle(lec.id)} className="accent-yellow-400"/>
-                          <span className="font-medium">{lec.name}</span>
-                        </div>
-                        <span className="text-[10px] text-slate-400">{lec.passages.length} passage{lec.passages.length!==1?"s":""}</span>
-                      </label>
-                    );
-                  })}
+                  ):(()=>{
+                    const grouped={};
+                    lectures.forEach(lec=>{const g=lec.tag||'General';if(!grouped[g])grouped[g]=[];grouped[g].push(lec);});
+                    const groupKeys=Object.keys(grouped).sort((a,b)=>a==='General'?1:b==='General'?-1:a.localeCompare(b));
+                    const multiGroup=groupKeys.length>1;
+                    return groupKeys.map(group=>(
+                      <div key={group}>
+                        {multiGroup&&<div className="text-[9px] font-bold font-ui uppercase px-1 pt-2 pb-0.5" style={{color:'var(--text-muted)',letterSpacing:'0.07em'}}>{group}</div>}
+                        {grouped[group].map(lec=>{
+                          const s=selIds.includes(lec.id);
+                          return(
+                            <label key={lec.id} className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm cursor-pointer transition-all ${s?"bg-yellow-500/15 border border-yellow-400/40":"glass-dark border border-transparent hover:border-slate-600"}`}>
+                              <div className="flex items-center gap-2.5">
+                                <input type={mode==="single"?"radio":"checkbox"} name="topic" checked={s}
+                                  onChange={()=>mode==="single"?setSelIds([lec.id]):toggle(lec.id)} className="accent-yellow-400"/>
+                                <span className="font-medium">{lec.name}</span>
+                              </div>
+                              <span className="text-[10px] text-slate-400">{lec.passages.length} passage{lec.passages.length!==1?"s":""}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ));
+                  })()}
                 </div>
               </div>
 
@@ -1957,11 +1968,12 @@
         return()=>clearInterval(iv);
       },[phase,startTime,avgWpm]);
 
-      // Try to advance to next word (called on Space press)
-      const tryAdvanceWord=useCallback(()=>{
+      // Try to advance to next word (called on Space press, or with inputOverride for auto-advance)
+      const tryAdvanceWord=useCallback((inputOverride=undefined)=>{
         if(!currentWord)return;
         const normalizeStr=s=>[...s].map(normalizeChar).join('');
-        const isCorrect=normalizeStr(wordInput)===normalizeStr(currentWord);
+        const inp=inputOverride!==undefined?inputOverride:wordInput;
+        const isCorrect=normalizeStr(inp)===normalizeStr(currentWord);
         if(!isCorrect){
           // Block advancement — shake and error sound
           setShaking(true);setTimeout(()=>setShaking(false),350);
@@ -2048,7 +2060,12 @@
         }
         setWordInput(newVal);
         prevWordInputRef.current=newVal;
-      },[phase,startTime,combo,bestCombo,currentWord,settings.soundOn,tryAdvanceWord]);
+        // Auto-finish: last word fully typed correctly → advance without Space
+        if(words.length>0&&wordIdx===words.length-1&&newVal.length===currentWord.length&&newVal.length>0){
+          const normalizeStr=s=>[...s].map(normalizeChar).join('');
+          if(normalizeStr(newVal)===normalizeStr(currentWord))tryAdvanceWord(newVal);
+        }
+      },[phase,startTime,combo,bestCombo,currentWord,settings.soundOn,tryAdvanceWord,wordIdx,words]);
 
       // Nitro boost: press Tab
       const launchNitroAttack=useCallback(()=>{
@@ -2078,6 +2095,11 @@
               setNitroActive(true);
               setTimeout(()=>setNitroActive(false),3000);
             }
+            // Skip ahead by one word (like NitroType)
+            setWordIdx(p=>p+1);
+            setWordInput('');
+            prevWordInputRef.current='';
+            setCompletedWords(p=>[...p,{correct:true}]);
           }
         };
         window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);
@@ -3058,9 +3080,9 @@
                   {/* Sprite or emoji */}
                   <div className="flex justify-center mb-2">
                     {spriteUrl&&unlocked
-                      ?<img src={spriteUrl} alt={p.name} width={48} height={48}
+                      ?<img src={spriteUrl} alt={p.name} width={72} height={72}
                           style={{imageRendering:'pixelated',filter:selected?`drop-shadow(0 0 8px ${p.color})`:'none'}}/>
-                      :<span className="text-3xl block text-center"
+                      :<span className="text-5xl block text-center"
                           style={{filter:unlocked?'none':'brightness(0) opacity(0.4)'}}>{p.emoji}</span>
                     }
                   </div>
@@ -3192,7 +3214,7 @@
     function suggestTag(name='',text=''){
       const h=(name+' '+text.slice(0,200)).toLowerCase();
       const map={
-        'Biology':['bio','cell','gene','evol','dna','organ','tissue','metabol'],
+        'Biology':['bio','cell','gene','evol','dna','organism','organelle','tissue','metabol','anatomy','photosyn'],
         'Chemistry':['chem','mol','atom','react','bond','acid','compound','element'],
         'Physics':['physic','force','energy','wave','quant','thermo','optic'],
         'Mathematics':['math','calcul','algeb','geom','statist','probab','theorem'],
@@ -3531,16 +3553,33 @@
             )}
           </div>
 
-          {/* ── Lecture cards ── */}
-          <div className="grid md:grid-cols-2 gap-3">
-            {lectures.map(lec=>(
-              <LectureCard key={lec.id} lec={lec} races={races}
-                onDelete={()=>delLec(lec.id)}
-                onPractice={()=>startPractice(lec.id)}
-                onRename={renameLec}
-                onTagEdit={tagLec}/>
-            ))}
-          </div>
+          {/* ── Lecture cards grouped by class ── */}
+          {(()=>{
+            const grouped={};
+            lectures.forEach(lec=>{const g=lec.tag||'General';if(!grouped[g])grouped[g]=[];grouped[g].push(lec);});
+            const groupKeys=Object.keys(grouped).sort((a,b)=>a==='General'?1:b==='General'?-1:a.localeCompare(b));
+            const multiGroup=groupKeys.length>1;
+            return groupKeys.map(group=>(
+              <div key={group} className="space-y-2">
+                {multiGroup&&(
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs font-black font-ui uppercase tracking-widest" style={{color:'var(--accent-primary)'}}>{group}</span>
+                    <div className="flex-1 h-px" style={{background:'rgba(255,255,255,0.07)'}}/>
+                    <span className="text-[9px] font-ui" style={{color:'var(--text-muted)'}}>{grouped[group].length} lecture{grouped[group].length!==1?'s':''}</span>
+                  </div>
+                )}
+                <div className="grid md:grid-cols-2 gap-3">
+                  {grouped[group].map(lec=>(
+                    <LectureCard key={lec.id} lec={lec} races={races}
+                      onDelete={()=>delLec(lec.id)}
+                      onPractice={()=>startPractice(lec.id)}
+                      onRename={renameLec}
+                      onTagEdit={tagLec}/>
+                  ))}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       );
     }
