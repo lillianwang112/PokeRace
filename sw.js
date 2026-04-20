@@ -1,11 +1,11 @@
-const CACHE = "pokerace-v1";
+const CACHE = "pokerace-v2";
 
 const PRECACHE = [
-  "/",
-  "/index.html",
-  "/manifest.webmanifest",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png"
+  ".",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icons/icon-192x192.png",
+  "./icons/icon-512x512.png"
 ];
 
 self.addEventListener("install", e => {
